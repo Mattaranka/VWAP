@@ -1,0 +1,28 @@
+name: Vérification des alertes Nanobiotix
+
+on:
+  schedule:
+    # Toutes les 15 minutes, 7h-18h UTC, du lundi au vendredi.
+    # Ajustez selon les horaires de cotation d'Euronext Paris (9h-17h30 CET/CEST).
+    - cron: "*/15 7-18 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  check-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Vérifier les alertes et notifier Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TICKER: NANO.PA
+        run: python scripts/check_alerts.py
