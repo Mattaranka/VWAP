@@ -1,4 +1,5 @@
 """Indicateurs techniques : EMA, VWAP, RSI, taille moyenne des bougies."""
+import numpy as np
 import pandas as pd
 
 
@@ -21,9 +22,10 @@ def vwap(df: pd.DataFrame) -> pd.Series:
     tmp["_date"] = tmp.index.date
     typical_price = (tmp["High"] + tmp["Low"] + tmp["Close"]) / 3
     tmp["_tpv"] = typical_price * tmp["Volume"]
-    cum_tpv = tmp.groupby("_date")["_tpv"].cumsum()
-    cum_vol = tmp.groupby("_date")["Volume"].cumsum().replace(0, pd.NA)
-    return (cum_tpv / cum_vol).astype(float)
+    cum_tpv = tmp.groupby("_date")["_tpv"].cumsum().astype(float)
+    cum_vol = tmp.groupby("_date")["Volume"].cumsum().astype(float)
+    cum_vol = cum_vol.where(cum_vol != 0, np.nan)
+    return cum_tpv / cum_vol
 
 
 def rsi(series: pd.Series, period: int = 14) -> pd.Series:
