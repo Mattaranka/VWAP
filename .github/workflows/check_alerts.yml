@@ -2,10 +2,11 @@ name: Vérification des alertes Nanobiotix
 
 on:
   schedule:
-    # Toutes les 15 minutes, 7h-18h UTC, du lundi au vendredi.
-    # Ajustez selon les horaires de cotation d'Euronext Paris (9h-17h30 CET/CEST).
     - cron: "*/15 7-18 * * 1-5"
   workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   check-alerts:
@@ -24,5 +25,12 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TICKER: NANO.PA
         run: python scripts/check_alerts.py
+
+      - name: Sauvegarder l'état des alertes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alerts_state.json
+          git diff --staged --quiet || git commit -m "Update alerts state [skip ci]"
+          git push
