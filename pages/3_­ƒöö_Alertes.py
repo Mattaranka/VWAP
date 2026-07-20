@@ -1,9 +1,12 @@
+import json
+
 import streamlit as st
 
 from utils.watchlist import load_watchlist
 from utils.data import get_daily, get_h1, get_m5
 from utils.indicators import add_emas, rsi
 from utils.telegram_utils import send_telegram_message
+from utils.github_sync import push_file, is_configured
 from utils.alerts_store import (
     load_alerts_config,
     save_alerts_config,
@@ -49,7 +52,22 @@ with c2:
 if st.button("💾 Enregistrer la configuration"):
     cfg_all[ticker] = cfg
     if save_alerts_config(cfg_all):
-        st.success(f"Configuration enregistrée pour {ticker} (utilisée aussi par le script GitHub Actions).")
+        st.success(f"Configuration enregistrée pour {ticker}.")
+        if is_configured():
+            ok, msg = push_file(
+                "alerts_config.json",
+                json.dumps(cfg_all, indent=2, ensure_ascii=False),
+                f"Update alerts config for {ticker} via app",
+            )
+            if ok:
+                st.toast("Configuration synchronisée sur GitHub ✅")
+            else:
+                st.warning(f"Enregistré localement, mais échec de synchro GitHub : {msg}")
+        else:
+            st.caption(
+                "ℹ️ Synchronisation GitHub non configurée : le workflow GitHub Actions ne verra "
+                "ce changement qu'après un committ manuel du fichier (voir README)."
+            )
     else:
         st.error("Impossible d'écrire le fichier de configuration sur cet environnement.")
 

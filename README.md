@@ -64,7 +64,39 @@ activée — indépendamment de l'état de l'app Streamlit.
 4. Le workflow tourne toutes les 15 minutes sur les horaires de marché (ajustable dans le
    fichier `.yml`) et peut aussi être lancé manuellement via l'onglet **Actions → Run workflow**.
 
-## Structure du projet
+## Synchronisation automatique avec GitHub
+
+Par défaut, quand vous modifiez la watchlist ou les alertes dans l'app, les fichiers
+`watchlist.json` / `alerts_config.json` sont mis à jour **sur le serveur Streamlit Cloud**
+mais pas automatiquement sur GitHub — il faut alors les recopier manuellement pour que le
+workflow GitHub Actions (alertes 24/7) en tienne compte.
+
+Pour automatiser entièrement cette synchronisation, l'app peut committer directement ces
+fichiers sur GitHub via son API, à chaque clic sur "Enregistrer" / "Ajouter" / "Retirer" :
+
+1. Sur GitHub → votre photo de profil → **Settings → Developer settings → Personal access
+   tokens → Fine-grained tokens → Generate new token**.
+2. Donnez-lui un nom, une expiration (ex. 1 an), et restreignez-le à **ce seul dépôt**
+   ("Only select repositories" → sélectionnez votre repo).
+3. Dans **Permissions → Repository permissions**, réglez **Contents** sur **Read and write**.
+   Laissez tout le reste sur "No access".
+4. Générez le token et copiez-le immédiatement (il ne sera plus jamais affiché).
+5. Dans votre app Streamlit Cloud → **Settings → Secrets**, ajoutez :
+   ```toml
+   [github]
+   token = "le_token_copié"
+   repo = "votre-utilisateur/votre-repo"
+   branch = "main"
+   ```
+6. **Save**, puis **Reboot app**.
+
+À partir de là, chaque modification de la watchlist ou des alertes dans l'app crée
+automatiquement un commit sur GitHub — l'étape de copier-coller manuel disparaît.
+
+⚠️ Ce token donne un accès en écriture à votre dépôt : gardez-le confidentiel, ne le
+partagez jamais, et régénérez-le (ou révoquez-le) si vous pensez qu'il a fuité.
+
+
 
 ```
 app.py                              Page d'accueil / sélection du titre actif

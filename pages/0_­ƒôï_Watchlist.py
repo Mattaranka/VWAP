@@ -1,8 +1,11 @@
+import json
+
 import pandas as pd
 import streamlit as st
 
 from utils.watchlist import load_watchlist, save_watchlist
 from utils.screener import ticker_summary
+from utils.github_sync import push_file, is_configured
 
 st.set_page_config(page_title="Watchlist", page_icon="📋", layout="wide")
 st.title("📋 Watchlist PEA")
@@ -10,20 +13,43 @@ st.title("📋 Watchlist PEA")
 if "watchlist" not in st.session_state:
     st.session_state["watchlist"] = load_watchlist()
 
+
+def persist_watchlist():
+    """Sauvegarde locale (toujours) + synchronisation GitHub (si configurée)."""
+    save_watchlist(st.session_state["watchlist"])
+    if is_configured():
+        ok, msg = push_file(
+            "watchlist.json",
+            json.dumps(st.session_state["watchlist"], indent=2, ensure_ascii=False),
+            "Update watchlist via app",
+        )
+        if ok:
+            st.toast("Watchlist synchronisée sur GitHub ✅")
+        else:
+            st.warning(f"Watchlist enregistrée localement, mais échec de synchro GitHub : {msg}")
+
+
 st.subheader("Gestion de la liste")
+if not is_configured():
+    st.caption(
+        "ℹ️ Synchronisation GitHub non configurée : vos modifications restent locales à cette "
+        "session tant que la synchro automatique n'est pas activée (voir README, section "
+        "« Synchronisation automatique avec GitHub »)."
+    )
+
 c1, c2 = st.columns([3, 1])
 new_ticker = c1.text_input("Ajouter un ticker (ex : AI.PA, MC.PA, ALTA.PA...)", "")
 if c2.button("➕ Ajouter") and new_ticker.strip():
     t = new_ticker.strip().upper()
     if t not in st.session_state["watchlist"]:
         st.session_state["watchlist"].append(t)
-        save_watchlist(st.session_state["watchlist"])
+        persist_watchlist()
         st.rerun()
 
 to_remove = st.multiselect("Retirer des tickers", st.session_state["watchlist"])
 if st.button("🗑️ Retirer la sélection") and to_remove:
     st.session_state["watchlist"] = [t for t in st.session_state["watchlist"] if t not in to_remove]
-    save_watchlist(st.session_state["watchlist"])
+    persist_watchlist()
     st.rerun()
 
 st.caption(
