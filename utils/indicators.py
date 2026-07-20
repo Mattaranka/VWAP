@@ -45,3 +45,18 @@ def avg_candle_size(df: pd.DataFrame, period: int = 14) -> float:
         return float("nan")
     size = df["High"] - df["Low"]
     return float(size.tail(period).mean())
+
+
+def wick_stats(df: pd.DataFrame, period: int = 14):
+    """Sur les N dernières bougies, calcule :
+    - la taille moyenne (Haut - Bas) en % du prix d'ouverture
+    - la hausse moyenne (Haut - Ouverture) en % du prix d'ouverture
+    - la baisse moyenne (Ouverture - Bas) en % du prix d'ouverture
+    Retourne (taille_pct, hausse_pct, baisse_pct)."""
+    if df.empty:
+        return float("nan"), float("nan"), float("nan")
+    d = df.tail(period)
+    size_pct = ((d["High"] - d["Low"]) / d["Open"] * 100).mean()
+    up_pct = ((d["High"] - d["Open"]) / d["Open"] * 100).mean()
+    down_pct = ((d["Open"] - d["Low"]) / d["Open"] * 100).mean()
+    return float(size_pct), float(up_pct), float(down_pct)

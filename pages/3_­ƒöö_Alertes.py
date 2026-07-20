@@ -1,84 +1,77 @@
-import json
-import os
 import streamlit as st
 
+from utils.watchlist import load_watchlist
 from utils.data import get_daily, get_h1, get_m5
 from utils.indicators import add_emas, rsi
 from utils.telegram_utils import send_telegram_message
+from utils.alerts_store import (
+    load_alerts_config,
+    save_alerts_config,
+    get_ticker_config,
+)
 
 st.set_page_config(page_title="Alertes", page_icon="🔔", layout="wide")
 st.title("🔔 Alertes Telegram")
 
-ticker = st.session_state.get("ticker", "NANO.PA")
-st.caption(f"Ticker : `{ticker}`")
+watchlist = load_watchlist()
+if not watchlist:
+    st.warning("Ajoutez au moins un titre depuis la page 📋 Watchlist avant de configurer des alertes.")
+    st.stop()
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "alerts_config.json")
+default_ticker = st.session_state.get("ticker", watchlist[0])
+default_index = watchlist.index(default_ticker) if default_ticker in watchlist else 0
+ticker = st.selectbox("Titre à configurer", watchlist, index=default_index)
 
-DEFAULT_CONFIG = {
-    "cross_ema_m5": False,
-    "cross_ema_h1": False,
-    "cross_ema_d1": False,
-    "touch_ema20_d1": False,
-    "touch_ema50_d1": False,
-    "touch_ema200_d1": False,
-    "rsi_d1": False,
-}
+cfg_all = load_alerts_config()
+cfg = get_ticker_config(cfg_all, ticker)
 
-
-def load_config():
-    if os.path.exists(CONFIG_PATH):
-        try:
-            with open(CONFIG_PATH) as f:
-                return {**DEFAULT_CONFIG, **json.load(f)}
-        except Exception:
-            return DEFAULT_CONFIG.copy()
-    return DEFAULT_CONFIG.copy()
-
-
-def save_config(cfg):
-    try:
-        with open(CONFIG_PATH, "w") as f:
-            json.dump(cfg, f, indent=2)
-        return True
-    except Exception:
-        return False
-
-
-if "alerts_config" not in st.session_state:
-    st.session_state["alerts_config"] = load_config()
-
-cfg = st.session_state["alerts_config"]
-
-st.subheader("Activer / désactiver les alertes")
+st.subheader(f"Activer / désactiver les alertes — {ticker}")
 c1, c2 = st.columns(2)
 with c1:
-    cfg["cross_ema_m5"] = st.checkbox("Croisement EMA8 / EMA20 — M5", value=cfg["cross_ema_m5"])
-    cfg["cross_ema_h1"] = st.checkbox("Croisement EMA8 / EMA20 — H1", value=cfg["cross_ema_h1"])
-    cfg["cross_ema_d1"] = st.checkbox("Croisement EMA8 / EMA20 — D1", value=cfg["cross_ema_d1"])
-    cfg["rsi_d1"] = st.checkbox("RSI D1 > 70 ou < 30", value=cfg["rsi_d1"])
+    cfg["cross_ema_m5"] = st.checkbox("Croisement EMA8 / EMA20 — M5", value=cfg["cross_ema_m5"], key=f"m5_{ticker}")
+    cfg["cross_ema_h1"] = st.checkbox("Croisement EMA8 / EMA20 — H1", value=cfg["cross_ema_h1"], key=f"h1_{ticker}")
+    cfg["cross_ema_d1"] = st.checkbox("Croisement EMA8 / EMA20 — D1", value=cfg["cross_ema_d1"], key=f"d1_{ticker}")
+    cfg["rsi_d1"] = st.checkbox("RSI D1 > 70 ou < 30", value=cfg["rsi_d1"], key=f"rsi_{ticker}")
 with c2:
-    cfg["touch_ema20_d1"] = st.checkbox("Dernière bougie touche l'EMA20 — D1", value=cfg["touch_ema20_d1"])
-    cfg["touch_ema50_d1"] = st.checkbox("Dernière bougie touche l'EMA50 — D1", value=cfg["touch_ema50_d1"])
-    cfg["touch_ema200_d1"] = st.checkbox("Dernière bougie touche l'EMA200 — D1", value=cfg["touch_ema200_d1"])
+    cfg["touch_ema20_d1"] = st.checkbox(
+        "Dernière bougie touche l'EMA20 — D1", value=cfg["touch_ema20_d1"], key=f"t20_{ticker}"
+    )
+    cfg["touch_ema50_d1"] = st.checkbox(
+        "Dernière bougie touche l'EMA50 — D1", value=cfg["touch_ema50_d1"], key=f"t50_{ticker}"
+    )
+    cfg["touch_ema200_d1"] = st.checkbox(
+        "Dernière bougie touche l'EMA200 — D1", value=cfg["touch_ema200_d1"], key=f"t200_{ticker}"
+    )
+    cfg["volume_spike_d1"] = st.checkbox(
+        "Volume journalier > 1.5x volume moyen (20j)", value=cfg["volume_spike_d1"], key=f"vol_{ticker}"
+    )
 
 if st.button("💾 Enregistrer la configuration"):
-    if save_config(cfg):
-        st.success("Configuration enregistrée (utilisée aussi par le script GitHub Actions).")
+    cfg_all[ticker] = cfg
+    if save_alerts_config(cfg_all):
+        st.success(f"Configuration enregistrée pour {ticker} (utilisée aussi par le script GitHub Actions).")
     else:
         st.error("Impossible d'écrire le fichier de configuration sur cet environnement.")
 
 st.divider()
+st.subheader("Récapitulatif de la watchlist")
+for t in watchlist:
+    c = get_ticker_config(cfg_all, t)
+    active = [k for k, v in c.items() if v]
+    st.write(f"**{t}** — {', '.join(active) if active else 'aucune alerte active'}")
+
+st.divider()
 st.subheader("Test de connexion Telegram")
 if st.button("Envoyer un message de test"):
-    ok, msg = send_telegram_message(f"✅ Test — Dashboard Nanobiotix connecté ({ticker}).")
+    ok, msg = send_telegram_message(f"✅ Test — Dashboard PEA connecté ({ticker}).")
     st.success("Message envoyé.") if ok else st.error(f"Échec : {msg}")
 
 st.divider()
-st.subheader("Vérification manuelle des alertes")
+st.subheader(f"Vérification manuelle des alertes — {ticker}")
 st.caption(
-    "L'application Streamlit ne tourne que lorsque la page est ouverte. Pour un suivi 24/7, "
-    "configurez le workflow GitHub Actions fourni (`.github/workflows/check_alerts.yml`), qui "
-    "exécute `scripts/check_alerts.py` selon un planning cron indépendant de cette page."
+    "Pour un suivi 24/7 sur l'ensemble de la watchlist, le workflow GitHub Actions fourni "
+    "(`.github/workflows/check_alerts.yml`) exécute `scripts/check_alerts.py` en boucle sur "
+    "tous les titres, indépendamment de cette page."
 )
 
 
@@ -104,12 +97,10 @@ def check_touch(df, ema_col, tol_pct=0.3):
     ema_val = last[ema_col]
     if ema_val != ema_val or ema_val == 0:
         return False
-    inside_range = last["Low"] <= ema_val <= last["High"]
-    close_enough = abs(last["Close"] - ema_val) / ema_val * 100 <= tol_pct
-    return bool(inside_range or close_enough)
+    return bool(last["Low"] <= ema_val <= last["High"] or abs(last["Close"] - ema_val) / ema_val * 100 <= tol_pct)
 
 
-if st.button("🔍 Vérifier maintenant"):
+if st.button("🔍 Vérifier maintenant (ce titre uniquement)"):
     messages = []
 
     if cfg["cross_ema_m5"]:
@@ -138,6 +129,11 @@ if st.button("🔍 Vérifier maintenant"):
             messages.append(f"RSI D1 = {r:.1f} — zone de surachat (>70) sur {ticker}")
         elif r < 30:
             messages.append(f"RSI D1 = {r:.1f} — zone de survente (<30) sur {ticker}")
+    if cfg["volume_spike_d1"] and not df_d1.empty:
+        vol_avg20 = df_d1["Volume"].tail(20).mean()
+        vol_jour = df_d1["Volume"].iloc[-1]
+        if vol_avg20 and vol_jour > 1.5 * vol_avg20:
+            messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}")
 
     if messages:
         for m in messages:
