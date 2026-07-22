@@ -3,7 +3,7 @@ import json
 import streamlit as st
 
 from utils.watchlist import load_watchlist
-from utils.data import get_daily, get_h1, get_m5
+from utils.data import get_daily, get_h1, get_m5, get_current_price
 from utils.indicators import add_emas, rsi
 from utils.telegram_utils import send_telegram_message
 from utils.github_sync import push_file, is_configured
@@ -48,6 +48,34 @@ with c2:
     cfg["volume_spike_d1"] = st.checkbox(
         "Volume journalier > 1.5x volume moyen (20j)", value=cfg["volume_spike_d1"], key=f"vol_{ticker}"
     )
+
+st.divider()
+st.subheader("Alerte sur seuils de prix")
+cfg["price_alert_enabled"] = st.checkbox(
+    "Activer l'alerte sur seuils de prix", value=cfg["price_alert_enabled"], key=f"price_en_{ticker}"
+)
+pc1, pc2 = st.columns(2)
+cfg["price_high"] = pc1.number_input(
+    "Prix haut (déclenche si atteint ou dépassé)",
+    min_value=0.0,
+    value=float(cfg.get("price_high") or 0.0),
+    step=0.01,
+    format="%.2f",
+    key=f"price_high_{ticker}",
+)
+cfg["price_low"] = pc2.number_input(
+    "Prix bas (déclenche si atteint ou franchi à la baisse)",
+    min_value=0.0,
+    value=float(cfg.get("price_low") or 0.0),
+    step=0.01,
+    format="%.2f",
+    key=f"price_low_{ticker}",
+)
+st.caption(
+    "Laissez un champ à 0 pour désactiver ce seuil spécifique (les deux peuvent être utilisés "
+    "ensemble ou séparément). L'alerte se redéclenche si le prix ressort de la zone puis "
+    "retraverse le seuil."
+)
 
 if st.button("💾 Enregistrer la configuration"):
     cfg_all[ticker] = cfg
@@ -152,6 +180,13 @@ if st.button("🔍 Vérifier maintenant (ce titre uniquement)"):
         vol_jour = df_d1["Volume"].iloc[-1]
         if vol_avg20 and vol_jour > 1.5 * vol_avg20:
             messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}")
+    if cfg["price_alert_enabled"]:
+        prix = get_current_price(ticker)
+        if prix is not None:
+            if cfg["price_high"] and prix >= cfg["price_high"]:
+                messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil HAUT {cfg['price_high']:.2f} € atteint")
+            if cfg["price_low"] and prix <= cfg["price_low"]:
+                messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil BAS {cfg['price_low']:.2f} € atteint")
 
     if messages:
         for m in messages:

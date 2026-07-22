@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.data import get_daily, get_h1, get_m5
+from utils.data import get_daily, get_h1, get_m5, get_current_price
 from utils.indicators import add_emas, rsi
 from utils.telegram_utils import send_telegram_message
 from utils.watchlist import load_watchlist
@@ -97,6 +97,22 @@ def check_one_ticker(ticker, cfg, state):
             state["d1_volume_spike_date"] = today_str
         elif not spike:
             state["d1_volume_spike_date"] = None
+
+    if cfg["price_alert_enabled"]:
+        prix = get_current_price(ticker)
+        if prix is not None:
+            high = cfg.get("price_high") or 0
+            low = cfg.get("price_low") or 0
+            if high:
+                above = prix >= high
+                if above and not state.get("price_above_high", False):
+                    messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil HAUT {high:.2f} € atteint")
+                state["price_above_high"] = above
+            if low:
+                below = prix <= low
+                if below and not state.get("price_below_low", False):
+                    messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil BAS {low:.2f} € atteint")
+                state["price_below_low"] = below
 
     return messages
 

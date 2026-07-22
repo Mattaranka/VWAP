@@ -55,3 +55,15 @@ def get_h4(ticker: str = DEFAULT_TICKER, period: str = "60d") -> pd.DataFrame:
 
 def get_m5(ticker: str = DEFAULT_TICKER, period: str = "5d") -> pd.DataFrame:
     return fetch_data(ticker, period=period, interval="5m")
+
+
+def get_current_price(ticker: str = DEFAULT_TICKER):
+    """Dernier prix connu : dernière clôture intraday (M5) si disponible, sinon dernière
+    clôture journalière. Retourne None si aucune donnée n'est disponible."""
+    df_m5 = get_m5(ticker, period="5d")
+    if not df_m5.empty:
+        return float(df_m5["Close"].iloc[-1])
+    df_d1 = get_daily(ticker, period="5d")
+    if not df_d1.empty:
+        return float(df_d1["Close"].iloc[-1])
+    return None

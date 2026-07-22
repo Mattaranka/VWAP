@@ -1,28 +1,8 @@
 {
   "NANO.PA": {
-    "m5_ema_cross": "above",
-    "h1_ema_cross": "above",
-    "d1_ema_cross": "above",
-    "d1_touch_ema20": true,
-    "d1_touch_ema50": false,
-    "d1_touch_ema200": false,
-    "d1_rsi_zone": "neutral",
-    "d1_volume_spike_date": null
-  },
-  "ATO.PA": {
-    "m5_ema_cross": "below",
-    "h1_ema_cross": "below",
-    "d1_ema_cross": "below",
-    "d1_touch_ema20": false,
-    "d1_touch_ema50": false,
-    "d1_touch_ema200": false,
-    "d1_rsi_zone": "oversold",
-    "d1_volume_spike_date": "2026-07-22"
-  },
-  "SOI.PA": {
-    "m5_ema_cross": "above",
-    "h1_ema_cross": "above",
-    "d1_ema_cross": "below",
+    "m5_ema_cross": null,
+    "h1_ema_cross": null,
+    "d1_ema_cross": null,
     "d1_touch_ema20": false,
     "d1_touch_ema50": false,
     "d1_touch_ema200": false,

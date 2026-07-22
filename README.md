@@ -15,7 +15,7 @@ Fibonacci. Le titre initial est Nanobiotix (`NANO.PA`).
   rapport à l'ouverture, RSI journalier, VWAP de la session en cours
 - **🔔 Alertes** : notifications Telegram par titre, activables/désactivables (croisements
   EMA8/EMA20 en M5/H1/D1, contact avec EMA20/50/200 en D1, RSI D1 hors zone 30-70, volume
-  journalier > 1.5x la moyenne 20j)
+  journalier > 1.5x la moyenne 20j, seuils de prix haut/bas personnalisés)
 - **📐 Support / Résistance** : graphique multi-périodes (1j à 1an), EMA et VWAP
   affichables/masquables, niveaux basés sur les points pivots touchés ≥ 2 fois sur 5 jours
 - **🌀 Fibonacci** : retracements sur la période sélectionnée

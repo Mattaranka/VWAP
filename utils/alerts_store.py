@@ -18,6 +18,9 @@ DEFAULT_TICKER_CONFIG = {
     "touch_ema200_d1": False,
     "rsi_d1": False,
     "volume_spike_d1": False,
+    "price_alert_enabled": False,
+    "price_high": 0.0,
+    "price_low": 0.0,
 }
 
 DEFAULT_TICKER_STATE = {
@@ -29,6 +32,8 @@ DEFAULT_TICKER_STATE = {
     "d1_touch_ema200": False,
     "d1_rsi_zone": "neutral",
     "d1_volume_spike_date": None,
+    "price_above_high": False,
+    "price_below_low": False,
 }
 
 
