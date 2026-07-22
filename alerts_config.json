@@ -13,10 +13,10 @@
     "cross_ema_m5": true,
     "cross_ema_h1": true,
     "cross_ema_d1": true,
-    "touch_ema20_d1": false,
-    "touch_ema50_d1": false,
-    "touch_ema200_d1": false,
+    "touch_ema20_d1": true,
+    "touch_ema50_d1": true,
+    "touch_ema200_d1": true,
     "rsi_d1": true,
-    "volume_spike_d1": false
+    "volume_spike_d1": true
   }
 }
