@@ -3,7 +3,7 @@
     "m5_ema_cross": "above",
     "h1_ema_cross": "above",
     "d1_ema_cross": "above",
-    "d1_touch_ema20": true,
+    "d1_touch_ema20": false,
     "d1_touch_ema50": false,
     "d1_touch_ema200": false,
     "d1_rsi_zone": "neutral",
