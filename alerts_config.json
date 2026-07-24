@@ -9,7 +9,7 @@
     "rsi_d1": true,
     "volume_spike_d1": true,
     "price_alert_enabled": true,
-    "price_high": 35.5,
-    "price_low": 34.0
+    "price_high": 35.2,
+    "price_low": 35.0
   }
 }
