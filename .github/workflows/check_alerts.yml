@@ -1,8 +1,6 @@
 name: Vérification des alertes Nanobiotix
 
 on:
-  schedule:
-    - cron: "*/15 7-18 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
