@@ -9,6 +9,6 @@
     "d1_rsi_zone": "neutral",
     "d1_volume_spike_date": null,
     "price_above_high": false,
-    "price_below_low": true
+    "price_below_low": false
   }
 }
