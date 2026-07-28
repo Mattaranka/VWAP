@@ -1,7 +1,7 @@
 {
   "NANO.PA": {
     "m5_ema_cross": "below",
-    "h1_ema_cross": "above",
+    "h1_ema_cross": "below",
     "d1_ema_cross": "above",
     "d1_touch_ema20": false,
     "d1_touch_ema50": false,
