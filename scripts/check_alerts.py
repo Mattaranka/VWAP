@@ -1,10 +1,10 @@
 """Script autonome (sans Streamlit) pour vérifier les alertes de toute la watchlist et
-notifier Telegram. Destiné à être exécuté périodiquement par GitHub Actions.
+notifier Telegram. Destiné à être exécuté périodiquement (déclenchement externe recommandé,
+voir README) — ne s'exécute que pendant la fenêtre horaire de marché configurée.
 
 Les alertes de croisement/contact/RSI sont basées sur un CHANGEMENT D'ÉTAT (persisté dans
-alerts_state.json, par titre) pour ne jamais manquer un croisement survenu entre deux
-vérifications, ni spammer tant que l'état reste inchangé. L'alerte de volume utilise la
-date du jour pour ne se déclencher qu'une fois par séance.
+alerts_state.json, par titre) pour ne jamais manquer un événement survenu entre deux
+vérifications, ni spammer tant que l'état reste inchangé.
 """
 import os
 import sys
@@ -15,6 +15,7 @@ from utils.data import get_daily, get_h1, get_m5, get_current_price
 from utils.indicators import add_emas, rsi
 from utils.telegram_utils import send_telegram_message
 from utils.watchlist import load_watchlist
+from utils.market_hours import is_market_hours
 from utils.alerts_store import (
     load_alerts_config,
     load_alerts_state,
@@ -48,6 +49,9 @@ def check_touch(df, ema_col, tol_pct=0.3):
 def check_one_ticker(ticker, cfg, state):
     messages = []
 
+    price = get_current_price(ticker)
+    suffix = f" | Prix actuel : {price:.2f} €" if price is not None else ""
+
     def handle_cross(enabled, df, state_key, label):
         if not enabled:
             return
@@ -57,10 +61,11 @@ def check_one_ticker(ticker, cfg, state):
         prev_rel = state.get(state_key)
         if prev_rel is not None and rel != prev_rel:
             direction = "haussier ↑" if rel == "above" else "baissier ↓"
-            messages.append(f"Croisement EMA8/EMA20 {direction} détecté en {label} sur {ticker}")
+            messages.append(f"Croisement EMA8/EMA20 {direction} détecté en {label} sur {ticker}{suffix}")
         state[state_key] = rel
 
-    handle_cross(cfg["cross_ema_m5"], get_m5(ticker, "5d"), "m5_ema_cross", "M5")
+    df_m5 = get_m5(ticker, "5d")
+    handle_cross(cfg["cross_ema_m5"], df_m5, "m5_ema_cross", "M5")
     handle_cross(cfg["cross_ema_h1"], get_h1(ticker, "60d"), "h1_ema_cross", "H1")
 
     df_d1 = get_daily(ticker)
@@ -71,21 +76,26 @@ def check_one_ticker(ticker, cfg, state):
             return
         touching = check_touch(df_d1, ema_col)
         if touching and not state.get(state_key, False):
-            messages.append(f"La dernière bougie D1 touche l'{label} sur {ticker}")
+            messages.append(f"La dernière bougie D1 touche l'{label} sur {ticker}{suffix}")
         state[state_key] = touching
 
     handle_touch(cfg["touch_ema20_d1"], "EMA20", "d1_touch_ema20", "EMA20")
     handle_touch(cfg["touch_ema50_d1"], "EMA50", "d1_touch_ema50", "EMA50")
     handle_touch(cfg["touch_ema200_d1"], "EMA200", "d1_touch_ema200", "EMA200")
 
-    if cfg["rsi_d1"] and not df_d1.empty:
-        r = rsi(df_d1["Close"]).iloc[-1]
+    def handle_rsi(enabled, df, state_key, label):
+        if not enabled or df.empty:
+            return
+        r = rsi(df["Close"]).iloc[-1]
         zone = "overbought" if r > 70 else "oversold" if r < 30 else "neutral"
-        prev_zone = state.get("d1_rsi_zone", "neutral")
+        prev_zone = state.get(state_key, "neutral")
         if zone != prev_zone and zone != "neutral":
-            label = "surachat (>70)" if zone == "overbought" else "survente (<30)"
-            messages.append(f"RSI D1 = {r:.1f} — entrée en zone de {label} sur {ticker}")
-        state["d1_rsi_zone"] = zone
+            zone_label = "surachat (>70)" if zone == "overbought" else "survente (<30)"
+            messages.append(f"RSI {label} = {r:.1f} — entrée en zone de {zone_label} sur {ticker}{suffix}")
+        state[state_key] = zone
+
+    handle_rsi(cfg["rsi_d1"], df_d1, "d1_rsi_zone", "D1")
+    handle_rsi(cfg.get("rsi_m5", False), df_m5, "m5_rsi_zone", "M5")
 
     if cfg["volume_spike_d1"] and not df_d1.empty:
         vol_avg20 = df_d1["Volume"].tail(20).mean()
@@ -93,31 +103,33 @@ def check_one_ticker(ticker, cfg, state):
         today_str = str(df_d1.index[-1].date())
         spike = bool(vol_avg20 and vol_jour > 1.5 * vol_avg20)
         if spike and state.get("d1_volume_spike_date") != today_str:
-            messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}")
+            messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}{suffix}")
             state["d1_volume_spike_date"] = today_str
         elif not spike:
             state["d1_volume_spike_date"] = None
 
-    if cfg["price_alert_enabled"]:
-        prix = get_current_price(ticker)
-        if prix is not None:
-            high = cfg.get("price_high") or 0
-            low = cfg.get("price_low") or 0
-            if high:
-                above = prix >= high
-                if above and not state.get("price_above_high", False):
-                    messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil HAUT {high:.2f} € atteint")
-                state["price_above_high"] = above
-            if low:
-                below = prix <= low
-                if below and not state.get("price_below_low", False):
-                    messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil BAS {low:.2f} € atteint")
-                state["price_below_low"] = below
+    if cfg["price_alert_enabled"] and price is not None:
+        high = cfg.get("price_high") or 0
+        low = cfg.get("price_low") or 0
+        if high:
+            above = price >= high
+            if above and not state.get("price_above_high", False):
+                messages.append(f"Prix de {ticker} = {price:.2f} € — seuil HAUT {high:.2f} € atteint")
+            state["price_above_high"] = above
+        if low:
+            below = price <= low
+            if below and not state.get("price_below_low", False):
+                messages.append(f"Prix de {ticker} = {price:.2f} € — seuil BAS {low:.2f} € atteint")
+            state["price_below_low"] = below
 
     return messages
 
 
 def main():
+    if not is_market_hours():
+        print("Hors des heures de marché configurées (lun-ven 8h30-17h45 Paris) — vérification ignorée.")
+        return
+
     watchlist = load_watchlist()
     cfg_all = load_alerts_config()
     state_all = load_alerts_state()

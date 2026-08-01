@@ -35,6 +35,7 @@ with c1:
     cfg["cross_ema_h1"] = st.checkbox("Croisement EMA8 / EMA20 — H1", value=cfg["cross_ema_h1"], key=f"h1_{ticker}")
     cfg["cross_ema_d1"] = st.checkbox("Croisement EMA8 / EMA20 — D1", value=cfg["cross_ema_d1"], key=f"d1_{ticker}")
     cfg["rsi_d1"] = st.checkbox("RSI D1 > 70 ou < 30", value=cfg["rsi_d1"], key=f"rsi_{ticker}")
+    cfg["rsi_m5"] = st.checkbox("RSI M5 > 70 ou < 30", value=cfg.get("rsi_m5", False), key=f"rsim5_{ticker}")
 with c2:
     cfg["touch_ema20_d1"] = st.checkbox(
         "Dernière bougie touche l'EMA20 — D1", value=cfg["touch_ema20_d1"], key=f"t20_{ticker}"
@@ -117,7 +118,9 @@ st.subheader(f"Vérification manuelle des alertes — {ticker}")
 st.caption(
     "Pour un suivi 24/7 sur l'ensemble de la watchlist, le workflow GitHub Actions fourni "
     "(`.github/workflows/check_alerts.yml`) exécute `scripts/check_alerts.py` en boucle sur "
-    "tous les titres, indépendamment de cette page."
+    "tous les titres, indépendamment de cette page. Ce script automatique ne s'exécute que "
+    "du lundi au vendredi, 8h30-17h45 (heure de Paris) ; la vérification manuelle ci-dessous "
+    "reste disponible à tout moment."
 )
 
 
@@ -148,45 +151,53 @@ def check_touch(df, ema_col, tol_pct=0.3):
 
 if st.button("🔍 Vérifier maintenant (ce titre uniquement)"):
     messages = []
+    prix_actuel = get_current_price(ticker)
+    suffix = f" | Prix actuel : {prix_actuel:.2f} €" if prix_actuel is not None else ""
 
     if cfg["cross_ema_m5"]:
         c = check_cross(get_m5(ticker, "5d"))
         if c:
-            messages.append(f"Croisement EMA8/EMA20 {c} détecté en M5 sur {ticker}")
+            messages.append(f"Croisement EMA8/EMA20 {c} détecté en M5 sur {ticker}{suffix}")
     if cfg["cross_ema_h1"]:
         c = check_cross(get_h1(ticker, "60d"))
         if c:
-            messages.append(f"Croisement EMA8/EMA20 {c} détecté en H1 sur {ticker}")
+            messages.append(f"Croisement EMA8/EMA20 {c} détecté en H1 sur {ticker}{suffix}")
 
     df_d1 = get_daily(ticker)
     if cfg["cross_ema_d1"]:
         c = check_cross(df_d1)
         if c:
-            messages.append(f"Croisement EMA8/EMA20 {c} détecté en D1 sur {ticker}")
+            messages.append(f"Croisement EMA8/EMA20 {c} détecté en D1 sur {ticker}{suffix}")
     if cfg["touch_ema20_d1"] and check_touch(df_d1, "EMA20"):
-        messages.append(f"La dernière bougie D1 touche l'EMA20 sur {ticker}")
+        messages.append(f"La dernière bougie D1 touche l'EMA20 sur {ticker}{suffix}")
     if cfg["touch_ema50_d1"] and check_touch(df_d1, "EMA50"):
-        messages.append(f"La dernière bougie D1 touche l'EMA50 sur {ticker}")
+        messages.append(f"La dernière bougie D1 touche l'EMA50 sur {ticker}{suffix}")
     if cfg["touch_ema200_d1"] and check_touch(df_d1, "EMA200"):
-        messages.append(f"La dernière bougie D1 touche l'EMA200 sur {ticker}")
+        messages.append(f"La dernière bougie D1 touche l'EMA200 sur {ticker}{suffix}")
     if cfg["rsi_d1"] and not df_d1.empty:
         r = rsi(df_d1["Close"]).iloc[-1]
         if r > 70:
-            messages.append(f"RSI D1 = {r:.1f} — zone de surachat (>70) sur {ticker}")
+            messages.append(f"RSI D1 = {r:.1f} — zone de surachat (>70) sur {ticker}{suffix}")
         elif r < 30:
-            messages.append(f"RSI D1 = {r:.1f} — zone de survente (<30) sur {ticker}")
+            messages.append(f"RSI D1 = {r:.1f} — zone de survente (<30) sur {ticker}{suffix}")
+    if cfg.get("rsi_m5", False):
+        df_m5c = get_m5(ticker, "5d")
+        if not df_m5c.empty:
+            r = rsi(df_m5c["Close"]).iloc[-1]
+            if r > 70:
+                messages.append(f"RSI M5 = {r:.1f} — zone de surachat (>70) sur {ticker}{suffix}")
+            elif r < 30:
+                messages.append(f"RSI M5 = {r:.1f} — zone de survente (<30) sur {ticker}{suffix}")
     if cfg["volume_spike_d1"] and not df_d1.empty:
         vol_avg20 = df_d1["Volume"].tail(20).mean()
         vol_jour = df_d1["Volume"].iloc[-1]
         if vol_avg20 and vol_jour > 1.5 * vol_avg20:
-            messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}")
-    if cfg["price_alert_enabled"]:
-        prix = get_current_price(ticker)
-        if prix is not None:
-            if cfg["price_high"] and prix >= cfg["price_high"]:
-                messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil HAUT {cfg['price_high']:.2f} € atteint")
-            if cfg["price_low"] and prix <= cfg["price_low"]:
-                messages.append(f"Prix de {ticker} = {prix:.2f} € — seuil BAS {cfg['price_low']:.2f} € atteint")
+            messages.append(f"Volume journalier = {vol_jour / vol_avg20:.2f}x la moyenne 20j sur {ticker}{suffix}")
+    if cfg["price_alert_enabled"] and prix_actuel is not None:
+        if cfg["price_high"] and prix_actuel >= cfg["price_high"]:
+            messages.append(f"Prix de {ticker} = {prix_actuel:.2f} € — seuil HAUT {cfg['price_high']:.2f} € atteint")
+        if cfg["price_low"] and prix_actuel <= cfg["price_low"]:
+            messages.append(f"Prix de {ticker} = {prix_actuel:.2f} € — seuil BAS {cfg['price_low']:.2f} € atteint")
 
     if messages:
         for m in messages:

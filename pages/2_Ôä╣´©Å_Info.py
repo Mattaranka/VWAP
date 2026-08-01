@@ -27,6 +27,11 @@ else:
     high_5 = df["High"].tail(5).max()
     low_5 = df["Low"].tail(5).min()
 
+    high_jour = float(df["High"].iloc[-1])
+    low_jour = float(df["Low"].iloc[-1])
+    ouverture_jour = float(df["Open"].iloc[-1])
+    cloture_veille = float(df["Close"].iloc[-2]) if len(df) >= 2 else float("nan")
+
     taille_moy_eur = avg_candle_size(df, 14)
     taille_moy_pct, hausse_moy_pct, baisse_moy_pct = wick_stats(df, 14)
 
@@ -42,6 +47,14 @@ else:
             vwap_val = vwap_today.iloc[-1]
 
     st.metric("💰 Prix actuel", f"{prix_actuel:.2f} €")
+
+    st.divider()
+
+    col0a, col0b, col0c, col0d = st.columns(4)
+    col0a.metric("Ouverture du jour", f"{ouverture_jour:.2f} €")
+    col0b.metric("Clôture de la veille", f"{cloture_veille:.2f} €" if cloture_veille == cloture_veille else "N/A")
+    col0c.metric("Plus haut du jour", f"{high_jour:.2f} €")
+    col0d.metric("Plus bas du jour", f"{low_jour:.2f} €")
 
     st.divider()
 

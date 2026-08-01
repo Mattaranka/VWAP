@@ -10,12 +10,15 @@ Fibonacci. Le titre initial est Nanobiotix (`NANO.PA`).
   (tendance D1, RSI, écart aux EMA20/50, volume vs moyenne 20j, support/résistance)
 - **📊 Graphiques** : D1, H4 (reconstruit à partir du H1), H1, M5 — EMA 8/20/50/200 + VWAP,
   pour le titre actif
-- **ℹ️ Info** : prix actuel, volume moyen 20j, volume du jour, plus haut/bas 52 semaines et
-  5 jours, taille moyenne des bougies (en € et en %), hausse/baisse moyenne des mèches par
-  rapport à l'ouverture, RSI journalier, VWAP de la session en cours
-- **🔔 Alertes** : notifications Telegram par titre, activables/désactivables (croisements
-  EMA8/EMA20 en M5/H1/D1, contact avec EMA20/50/200 en D1, RSI D1 hors zone 30-70, volume
-  journalier > 1.5x la moyenne 20j, seuils de prix haut/bas personnalisés)
+- **ℹ️ Info** : prix actuel, ouverture du jour, clôture de la veille, plus haut/bas du jour,
+  volume moyen 20j, volume du jour, plus haut/bas 52 semaines et 5 jours, taille moyenne des
+  bougies (en € et en %), hausse/baisse moyenne des mèches par rapport à l'ouverture, RSI
+  journalier, VWAP de la session en cours
+- **🔔 Alertes** : notifications Telegram par titre (avec prix actuel inclus dans le message),
+  activables/désactivables (croisements EMA8/EMA20 en M5/H1/D1, contact avec EMA20/50/200 en
+  D1, RSI D1 et RSI M5 hors zone 30-70, volume journalier > 1.5x la moyenne 20j, seuils de prix
+  haut/bas personnalisés). Le script automatique ne s'exécute que du lundi au vendredi,
+  8h30-17h45 heure de Paris.
 - **📐 Support / Résistance** : graphique multi-périodes (1j à 1an), EMA et VWAP
   affichables/masquables, niveaux basés sur les points pivots touchés ≥ 2 fois sur 5 jours
 - **🌀 Fibonacci** : retracements sur la période sélectionnée
