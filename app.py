@@ -31,6 +31,8 @@ Bienvenue sur votre tableau de bord de suivi multi-titres.
 - **🔔 Alertes** — configuration des notifications Telegram, par titre
 - **📐 Support / Résistance** — niveaux clés sur différentes périodes
 - **🌀 Fibonacci** — retracements sur la période choisie
+- **📒 Journal** — saisie de vos trades, portefeuille en cours, historique
+- **📈 Performance** — KPIs, camemberts et courbe de performance à partir du journal
 
 Le titre actif défini ci-contre s'applique aux pages Graphiques, Info, Support/Résistance et
 Fibonacci. La Watchlist et les Alertes couvrent, elles, l'ensemble des titres que vous suivez.

@@ -22,6 +22,14 @@ Fibonacci. Le titre initial est Nanobiotix (`NANO.PA`).
 - **📐 Support / Résistance** : graphique multi-périodes (1j à 1an), EMA et VWAP
   affichables/masquables, niveaux basés sur les points pivots touchés ≥ 2 fois sur 5 jours
 - **🌀 Fibonacci** : retracements sur la période sélectionnée
+- **📒 Journal** : saisie des trades (entrée, quantité, frais, notes), **sorties partielles ou
+  totales** (allégement progressif d'une position en plusieurs ventes), suivi du portefeuille
+  en cours (quantité restante, valeur actuelle, P&L latent par position), historique de toutes
+  les ventes (partielles et totales)
+- **📈 Performance** : KPIs (taux de réussite, profit factor, gain/perte moyens, meilleure/pire
+  vente, durée moyenne de détention, espérance de gain — chaque vente partielle ou totale
+  compte comme un événement de P&L réalisé indépendant), allocation du portefeuille et
+  répartition gagnantes/perdantes en camemberts, P&L cumulé par titre, courbe de performance
 
 ## Installation locale
 
@@ -110,6 +118,8 @@ pages/
   3_🔔_Alertes.py                   Configuration des alertes par titre
   4_📐_Support_Résistance.py
   5_🌀_Fibonacci.py
+  6_📒_Journal.py                   Saisie des trades et suivi du portefeuille
+  7_📈_Performance.py               KPIs et graphiques de performance
 utils/
   data.py                           Récupération des données (Yahoo Finance)
   indicators.py                     EMA, VWAP, RSI, statistiques de bougies
@@ -119,12 +129,17 @@ utils/
   watchlist.py                      Gestion de la liste de titres suivis
   alerts_store.py                   Config/état des alertes, par titre
   screener.py                       Calculs de synthèse pour la Watchlist
+  market_hours.py                   Fenêtre horaire des alertes automatiques
+  journal_store.py                  Lecture/écriture du journal de trades
+  performance.py                    Calculs de KPIs et de P&L
+  github_sync.py                    Synchronisation des fichiers de config vers GitHub
 scripts/
   check_alerts.py                   Script autonome pour GitHub Actions (boucle multi-titres)
 .github/workflows/check_alerts.yml
 watchlist.json                      Liste des titres suivis
 alerts_config.json                  Alertes activées, par titre
 alerts_state.json                   État courant des alertes, par titre (anti-doublon/anti-oubli)
+trades_journal.json                 Historique des trades (ouverts et clôturés)
 ```
 
 ## Notes techniques
