@@ -1,12 +1,16 @@
 {
   "NANO.PA": {
-    "cross_ema_m5": false,
+    "cross_ema_m5": true,
     "cross_ema_h1": false,
     "cross_ema_d1": false,
     "touch_ema20_d1": false,
     "touch_ema50_d1": false,
     "touch_ema200_d1": false,
     "rsi_d1": false,
-    "volume_spike_d1": false
+    "rsi_m5": true,
+    "volume_spike_d1": true,
+    "price_alert_enabled": false,
+    "price_high": 35.3,
+    "price_low": 32.5
   }
 }
