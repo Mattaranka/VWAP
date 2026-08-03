@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "0a7019f1f68a",
+    "ticker": "NANO.PA",
+    "entry_date": "2026-08-03",
+    "entry_price": 32.7,
+    "quantity": 70,
+    "entry_fees": 11.9,
+    "notes": "",
+    "exits": []
+  }
+]
