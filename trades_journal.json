@@ -36,6 +36,15 @@
     "quantity": 27,
     "entry_fees": 5.0,
     "notes": "",
-    "exits": []
+    "exits": [
+      {
+        "id": "40cda1037e68",
+        "date": "2026-07-24",
+        "price": 100.1,
+        "quantity": 27,
+        "fees": 5.0,
+        "notes": ""
+      }
+    ]
   }
 ]
