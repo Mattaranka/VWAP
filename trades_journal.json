@@ -8,5 +8,15 @@
     "entry_fees": 11.9,
     "notes": "",
     "exits": []
+  },
+  {
+    "id": "06bc4f3c28b5",
+    "ticker": "SOIT.PA",
+    "entry_date": "2026-01-05",
+    "entry_price": 45.73,
+    "quantity": 10,
+    "entry_fees": 2.0,
+    "notes": "",
+    "exits": []
   }
 ]
