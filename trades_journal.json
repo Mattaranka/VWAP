@@ -46,15 +46,6 @@
     "quantity": 50,
     "entry_fees": 8.0,
     "notes": "",
-    "exits": [
-      {
-        "id": "0d6b136502f4",
-        "date": "2026-07-31",
-        "price": 35.6,
-        "quantity": 27,
-        "fees": 5.0,
-        "notes": ""
-      }
-    ]
+    "exits": []
   }
 ]
