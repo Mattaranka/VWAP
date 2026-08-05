@@ -65,15 +65,5 @@
         "notes": ""
       }
     ]
-  },
-  {
-    "id": "6512a4045222",
-    "ticker": "NANO.PA",
-    "entry_date": "2026-07-30",
-    "entry_price": 32.34,
-    "quantity": 50,
-    "entry_fees": 8.0,
-    "notes": "",
-    "exits": []
   }
 ]
