@@ -26,6 +26,7 @@ jobs:
         run: python scripts/check_alerts.py
 
       - name: Sauvegarder l'état des alertes
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -35,13 +36,17 @@ jobs:
             exit 0
           fi
           git commit -m "Update alerts state [skip ci]"
-          for i in 1 2 3 4 5; do
+          delay=5
+          for i in 1 2 3 4 5 6; do
             if git push; then
+              echo "Push réussi (tentative $i)."
               exit 0
             fi
-            echo "Échec du push (tentative $i/5) — nouvel essai dans 5s..."
-            sleep 5
-            git pull --rebase origin main
+            echo "Échec du push (tentative $i/6) — nouvel essai dans ${delay}s..."
+            sleep $delay
+            delay=$((delay * 2))
+            git fetch origin main
+            git rebase origin/main || git rebase --abort
           done
-          echo "Échec définitif du push après plusieurs tentatives."
+          echo "::warning::Échec de la sauvegarde de l'état des alertes après plusieurs tentatives — la prochaine vérification repartira de l'état précédent."
           exit 1
