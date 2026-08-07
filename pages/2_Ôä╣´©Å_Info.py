@@ -22,6 +22,7 @@ else:
 
     vol_moy_20 = df["Volume"].tail(20).mean()
     vol_jour = df["Volume"].iloc[-1]
+    vol_veille = float(df["Volume"].iloc[-2]) if len(df) >= 2 else float("nan")
     high_52 = df["High"].tail(252).max()
     low_52 = df["Low"].tail(252).min()
     high_5 = df["High"].tail(5).max()
@@ -63,6 +64,7 @@ else:
     col1.metric("Volume du jour", f"{vol_jour:,.0f}".replace(",", " "))
     if vol_moy_20:
         col1.caption(f"soit {vol_jour / vol_moy_20:.2f}x la moyenne 20j")
+    col1.metric("Volume de la veille", f"{vol_veille:,.0f}".replace(",", " ") if vol_veille == vol_veille else "N/A")
     col2.metric("Plus haut 52 semaines", f"{high_52:.2f} €")
     col2.metric("Plus bas 52 semaines", f"{low_52:.2f} €")
     col3.metric("Plus haut 5 jours", f"{high_5:.2f} €")

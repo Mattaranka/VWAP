@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 
 from utils.journal_store import load_trades
-from utils.performance import closed_legs_df, compute_kpis, open_positions_summary
+from utils.performance import closed_legs_df, compute_kpis, open_positions_summary, total_fees_paid
 
 st.set_page_config(page_title="Performance", page_icon="📈", layout="wide")
 st.title("📈 Dashboard de performance")
@@ -47,6 +47,8 @@ else:
         "Chaque vente (partielle ou totale) compte comme un événement de P&L réalisé "
         "indépendant. Alléger une position en 2 fois compte donc pour 2 lignes ci-dessous."
     )
+
+st.metric("💸 Frais totaux payés (entrées + sorties, tout le journal)", f"{total_fees_paid(trades):,.2f} €".replace(",", " "))
 
 st.divider()
 st.subheader("💼 Portefeuille actuel")

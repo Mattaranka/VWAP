@@ -109,6 +109,17 @@ def compute_kpis(df_legs):
     }
 
 
+def total_fees_paid(trades):
+    """Somme de tous les frais payés (entrée + sorties), positions ouvertes incluses,
+    puisque les frais d'entrée sont dus dès l'achat."""
+    total = 0.0
+    for t in trades:
+        total += t.get("entry_fees", 0) or 0
+        for e in t.get("exits", []):
+            total += e.get("fees", 0) or 0
+    return total
+
+
 def open_positions_summary(trades):
     """Une ligne par position encore ouverte (au moins un titre non vendu), sur la base de
     la quantité RESTANTE (après d'éventuelles sorties partielles)."""
