@@ -1,13 +1,13 @@
 {
   "NANO.PA": {
-    "m5_ema_cross": "below",
+    "m5_ema_cross": "above",
     "h1_ema_cross": null,
     "d1_ema_cross": null,
-    "d1_touch_ema20": true,
+    "d1_touch_ema20": false,
     "d1_touch_ema50": false,
     "d1_touch_ema200": false,
     "d1_rsi_zone": "neutral",
-    "m5_rsi_zone": "neutral",
+    "m5_rsi_zone": "overbought",
     "d1_volume_spike_date": null,
     "price_above_high": false,
     "price_below_low": true
