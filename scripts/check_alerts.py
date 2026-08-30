@@ -22,6 +22,7 @@ from utils.alerts_store import (
     save_alerts_state,
     get_ticker_config,
     get_ticker_state,
+    ALERT_TOGGLE_KEYS,
 )
 
 
@@ -66,7 +67,9 @@ def check_one_ticker(ticker, cfg, state):
 
     df_m5 = get_m5(ticker, "5d")
     handle_cross(cfg["cross_ema_m5"], df_m5, "m5_ema_cross", "M5")
-    handle_cross(cfg["cross_ema_h1"], get_h1(ticker, "60d"), "h1_ema_cross", "H1")
+
+    df_h1 = get_h1(ticker, "60d")
+    handle_cross(cfg["cross_ema_h1"], df_h1, "h1_ema_cross", "H1")
 
     df_d1 = get_daily(ticker)
     handle_cross(cfg["cross_ema_d1"], df_d1, "d1_ema_cross", "D1")
@@ -83,19 +86,27 @@ def check_one_ticker(ticker, cfg, state):
     handle_touch(cfg["touch_ema50_d1"], "EMA50", "d1_touch_ema50", "EMA50")
     handle_touch(cfg["touch_ema200_d1"], "EMA200", "d1_touch_ema200", "EMA200")
 
-    def handle_rsi(enabled, df, state_key, label):
+    def handle_rsi(enabled, df, state_key, label, high_th=70, low_th=30):
         if not enabled or df.empty:
             return
         r = rsi(df["Close"]).iloc[-1]
-        zone = "overbought" if r > 70 else "oversold" if r < 30 else "neutral"
+        zone = "overbought" if r > high_th else "oversold" if r < low_th else "neutral"
         prev_zone = state.get(state_key, "neutral")
         if zone != prev_zone and zone != "neutral":
-            zone_label = "surachat (>70)" if zone == "overbought" else "survente (<30)"
+            zone_label = f"surachat (>{high_th})" if zone == "overbought" else f"survente (<{low_th})"
             messages.append(f"RSI {label} = {r:.1f} — entrée en zone de {zone_label} sur {ticker}{suffix}")
         state[state_key] = zone
 
     handle_rsi(cfg["rsi_d1"], df_d1, "d1_rsi_zone", "D1")
     handle_rsi(cfg.get("rsi_m5", False), df_m5, "m5_rsi_zone", "M5")
+    handle_rsi(
+        cfg.get("rsi_h1", False),
+        df_h1,
+        "h1_rsi_zone",
+        "H1",
+        high_th=cfg.get("rsi_h1_high", 67) or 67,
+        low_th=cfg.get("rsi_h1_low", 33) or 33,
+    )
 
     if cfg["volume_spike_d1"] and not df_d1.empty:
         vol_avg20 = df_d1["Volume"].tail(20).mean()
@@ -140,7 +151,7 @@ def main():
 
     for ticker in tickers:
         cfg = get_ticker_config(cfg_all, ticker)
-        if not any(cfg.values()):
+        if not any(cfg.get(k) for k in ALERT_TOGGLE_KEYS):
             continue
         checked += 1
         state = get_ticker_state(state_all, ticker)

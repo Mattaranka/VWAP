@@ -31,6 +31,7 @@ Bienvenue sur votre tableau de bord de suivi multi-titres.
 - **🔔 Alertes** — configuration des notifications Telegram, par titre
 - **📐 Support / Résistance** — niveaux clés sur différentes périodes
 - **🌀 Fibonacci** — retracements sur la période choisie
+- **📉 H1 + RSI** — graphique H1 avec RSI en sous-graphique
 - **📒 Journal** — saisie de vos trades, portefeuille en cours, historique
 - **📈 Performance** — KPIs, camemberts et courbe de performance à partir du journal
 

@@ -51,6 +51,28 @@ with c2:
     )
 
 st.divider()
+st.subheader("Alerte RSI H1 (seuils ajustables)")
+cfg["rsi_h1"] = st.checkbox("Activer l'alerte RSI H1", value=cfg.get("rsi_h1", False), key=f"rsih1_{ticker}")
+rc1, rc2 = st.columns(2)
+cfg["rsi_h1_high"] = rc1.number_input(
+    "Seuil haut (surachat)",
+    min_value=1,
+    max_value=99,
+    value=int(cfg.get("rsi_h1_high", 67) or 67),
+    step=1,
+    key=f"rsih1_high_{ticker}",
+)
+cfg["rsi_h1_low"] = rc2.number_input(
+    "Seuil bas (survente)",
+    min_value=1,
+    max_value=99,
+    value=int(cfg.get("rsi_h1_low", 33) or 33),
+    step=1,
+    key=f"rsih1_low_{ticker}",
+)
+st.caption("Par défaut 67 / 33. L'alerte se déclenche une fois à l'entrée dans la zone, se réarme en en sortant.")
+
+st.divider()
 st.subheader("Alerte sur seuils de prix")
 cfg["price_alert_enabled"] = st.checkbox(
     "Activer l'alerte sur seuils de prix", value=cfg["price_alert_enabled"], key=f"price_en_{ticker}"
@@ -188,6 +210,16 @@ if st.button("🔍 Vérifier maintenant (ce titre uniquement)"):
                 messages.append(f"RSI M5 = {r:.1f} — zone de surachat (>70) sur {ticker}{suffix}")
             elif r < 30:
                 messages.append(f"RSI M5 = {r:.1f} — zone de survente (<30) sur {ticker}{suffix}")
+    if cfg.get("rsi_h1", False):
+        df_h1c = get_h1(ticker, "60d")
+        if not df_h1c.empty:
+            r = rsi(df_h1c["Close"]).iloc[-1]
+            high_th = cfg.get("rsi_h1_high", 67) or 67
+            low_th = cfg.get("rsi_h1_low", 33) or 33
+            if r > high_th:
+                messages.append(f"RSI H1 = {r:.1f} — zone de surachat (>{high_th}) sur {ticker}{suffix}")
+            elif r < low_th:
+                messages.append(f"RSI H1 = {r:.1f} — zone de survente (<{low_th}) sur {ticker}{suffix}")
     if cfg["volume_spike_d1"] and not df_d1.empty:
         vol_avg20 = df_d1["Volume"].tail(20).mean()
         vol_jour = df_d1["Volume"].iloc[-1]

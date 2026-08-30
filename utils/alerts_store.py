@@ -18,6 +18,9 @@ DEFAULT_TICKER_CONFIG = {
     "touch_ema200_d1": False,
     "rsi_d1": False,
     "rsi_m5": False,
+    "rsi_h1": False,
+    "rsi_h1_high": 67,
+    "rsi_h1_low": 33,
     "volume_spike_d1": False,
     "price_alert_enabled": False,
     "price_high": 0.0,
@@ -33,10 +36,26 @@ DEFAULT_TICKER_STATE = {
     "d1_touch_ema200": False,
     "d1_rsi_zone": "neutral",
     "m5_rsi_zone": "neutral",
+    "h1_rsi_zone": "neutral",
     "d1_volume_spike_date": None,
     "price_above_high": False,
     "price_below_low": False,
 }
+
+
+ALERT_TOGGLE_KEYS = [
+    "cross_ema_m5",
+    "cross_ema_h1",
+    "cross_ema_d1",
+    "touch_ema20_d1",
+    "touch_ema50_d1",
+    "touch_ema200_d1",
+    "rsi_d1",
+    "rsi_m5",
+    "rsi_h1",
+    "volume_spike_d1",
+    "price_alert_enabled",
+]
 
 
 def _load(path):
