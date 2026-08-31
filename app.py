@@ -32,6 +32,7 @@ Bienvenue sur votre tableau de bord de suivi multi-titres.
 - **📐 Support / Résistance** — niveaux clés sur différentes périodes
 - **🌀 Fibonacci** — retracements sur la période choisie
 - **📉 H1 + RSI** — graphique H1 avec RSI en sous-graphique
+- **🏭 Secteurs** — tendance des grands secteurs européens (contexte de marché)
 - **📒 Journal** — saisie de vos trades, portefeuille en cours, historique
 - **📈 Performance** — KPIs, camemberts et courbe de performance à partir du journal
 

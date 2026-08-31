@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.data import get_daily, get_m5
-from utils.indicators import rsi, avg_candle_size, wick_stats, vwap
+from utils.indicators import rsi, avg_candle_size, wick_stats, vwap, add_emas
 
 st.set_page_config(page_title="Info", page_icon="ℹ️", layout="wide")
 st.title("ℹ️ Informations clés")
@@ -38,6 +38,11 @@ else:
 
     rsi_series = rsi(df["Close"])
     rsi_d1 = rsi_series.iloc[-1]
+
+    df_emas = add_emas(df, (20, 50, 200))
+    ema20_val = float(df_emas["EMA20"].iloc[-1])
+    ema50_val = float(df_emas["EMA50"].iloc[-1])
+    ema200_val = float(df_emas["EMA200"].iloc[-1])
 
     vwap_val = float("nan")
     if not df_m5.empty:
@@ -79,6 +84,13 @@ else:
     col5.caption("Moyenne de (Haut − Ouverture) / Ouverture")
     col6.metric("Baisse moy. — mèche basse (14j)", f"{baisse_moy_pct:.2f}%")
     col6.caption("Moyenne de (Ouverture − Bas) / Ouverture")
+
+    st.divider()
+
+    col_e1, col_e2, col_e3 = st.columns(3)
+    col_e1.metric("EMA20 (D1)", f"{ema20_val:.2f} €")
+    col_e2.metric("EMA50 (D1)", f"{ema50_val:.2f} €")
+    col_e3.metric("EMA200 (D1)", f"{ema200_val:.2f} €")
 
     st.divider()
 

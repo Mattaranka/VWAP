@@ -13,7 +13,7 @@ Fibonacci. Le titre initial est Nanobiotix (`NANO.PA`).
 - **ℹ️ Info** : prix actuel, ouverture du jour, clôture de la veille, plus haut/bas du jour,
   volume moyen 20j, volume du jour, plus haut/bas 52 semaines et 5 jours, taille moyenne des
   bougies (en € et en %), hausse/baisse moyenne des mèches par rapport à l'ouverture, RSI
-  journalier, VWAP de la session en cours
+  journalier, EMA20/50/200 (D1), VWAP de la session en cours
 - **🔔 Alertes** : notifications Telegram par titre (avec prix actuel inclus dans le message),
   activables/désactivables (croisements EMA8/EMA20 en M5/H1/D1, contact avec EMA20/50/200 en
   D1, RSI D1 et RSI M5 hors zone 30-70, RSI H1 avec seuils ajustables (67/33 par défaut),
@@ -25,6 +25,9 @@ Fibonacci. Le titre initial est Nanobiotix (`NANO.PA`).
 - **🌀 Fibonacci** : retracements sur la période sélectionnée
 - **📉 H1 + RSI** : graphique H1 (chandelier + EMA + VWAP) avec le RSI en sous-graphique,
   lignes de seuil reprenant les valeurs configurées pour l'alerte RSI H1
+- **🏭 Secteurs** : tendance du jour des grands secteurs européens (Santé, Banques, Techno,
+  Énergie...) via des ETF STOXX Europe 600 sectoriels — contexte de marché, vert/rouge selon
+  la variation
 - **📒 Journal** : saisie des trades (entrée, quantité, frais, notes), **sorties partielles ou
   totales** (allégement progressif d'une position en plusieurs ventes), suivi du portefeuille
   en cours (quantité restante, valeur actuelle, P&L latent par position), historique de toutes
@@ -124,6 +127,7 @@ pages/
   6_📒_Journal.py                   Saisie des trades et suivi du portefeuille
   7_📈_Performance.py               KPIs et graphiques de performance
   8_📉_H1_RSI.py                    Graphique H1 avec RSI en sous-graphique
+  9_🏭_Secteurs.py                  Tendance des grands secteurs européens
 utils/
   data.py                           Récupération des données (Yahoo Finance)
   indicators.py                     EMA, VWAP, RSI, statistiques de bougies
@@ -133,6 +137,7 @@ utils/
   watchlist.py                      Gestion de la liste de titres suivis
   alerts_store.py                   Config/état des alertes, par titre
   screener.py                       Calculs de synthèse pour la Watchlist
+  sectors.py                        Tendance des grands secteurs européens (ETF proxy)
   market_hours.py                   Fenêtre horaire des alertes automatiques
   journal_store.py                  Lecture/écriture du journal de trades
   performance.py                    Calculs de KPIs et de P&L
