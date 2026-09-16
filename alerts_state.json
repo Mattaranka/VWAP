@@ -9,7 +9,7 @@
     "d1_rsi_zone": "neutral",
     "m5_rsi_zone": "neutral",
     "h1_rsi_zone": "neutral",
-    "d1_volume_spike_date": null,
+    "d1_volume_spike_date": "2026-09-14",
     "price_above_high": false,
     "price_below_low": false
   }
